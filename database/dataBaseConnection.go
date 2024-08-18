@@ -47,6 +47,8 @@ func Connect() (*sql.DB, error) {
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %v", err)
+	} else {
+		return nil, fmt.Errorf("Succesfully Connected to database: %v", err)
 	}
 
 	return DbConn, nil

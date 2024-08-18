@@ -1,8 +1,9 @@
 package main
 
 import (
-	"golang-hotel-management/middleware"
+	"fmt"
 	"golang-hotel-management/database"
+	"golang-hotel-management/routes"
 	"log"
 	"os"
 
@@ -16,11 +17,11 @@ func main() {
 	}
 	router := gin.New()
 	router.Use(gin.Logger())
-	routes.userRoutes(router)
+	routes.UserRoutes(router)
 	router.Use(middleware.Authentication())
 
-	routes.foodRoutes(router)
-	routes.menuRoutes(router)
+	routes.FoodRoutes(router)
+	routes.MenuRoutes(router)
 	routes.tableRoutes(router)
 	routes.orderRoutes(router)
 	routes.orderItemsRoutes(router)
@@ -28,8 +29,10 @@ func main() {
 
 	router.Run(":" + port)
 
-	_, err := .Connect()
+	_, err := database.Connect()
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
+	} else {
+		fmt.Println("connected to the database")
 	}
 }
