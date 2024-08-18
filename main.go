@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"golang-hotel-management/database"
+	"golang-hotel-management/middleware"
 	"golang-hotel-management/routes"
 	"log"
 	"os"
@@ -22,10 +23,10 @@ func main() {
 
 	routes.FoodRoutes(router)
 	routes.MenuRoutes(router)
-	routes.tableRoutes(router)
-	routes.orderRoutes(router)
-	routes.orderItemsRoutes(router)
-	routes.invoiceRoutes(router)
+	routes.TableRoutes(router)
+	routes.OrderRoutes(router)
+	routes.OrderItemsRoutes(router)
+	routes.InvoiceRoutes(router)
 
 	router.Run(":" + port)
 
