@@ -3,12 +3,11 @@ package models
 import "time"
 
 type Food struct {
-	ID        int64     `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name      string    `json:"name" gorm:"type:varchar(100);not null"`
-	Price     float64   `json:"price" gorm:"type:decimal(10,2);not null"`
-	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
-	FoodImage string    `json:"food_image" gorm:"type:varchar(255)"`
-	FoodID    int64     `json:"food_id" gorm:"not null"`
-	MenuID    int64     `json:"menu_id" gorm:"not null"`
+	ID        int64     `json:"id" db:"primaryKey;autoIncrement"`
+	Name      string    `json:"name" db:"type:varchar(100);not null"`
+	Price     float64   `json:"price" db:"type:decimal(10,2);not null"`
+	CreatedAt time.Time `json:"created_at" db:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" db:"autoUpdateTime"`
+	MenuID    int64     `json:"menu_id" db:"type:varchar(100);not null"`
+	Table_id  int64     `json:"table_id" db:"type:varchar(100);not null"`
 }

@@ -1,31 +1,61 @@
 package controllers
 
 import (
-	"context"
+	"golang-hotel-management/database"
 	"golang-hotel-management/models"
-	"time"
+	"log"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 	}
 }
-
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-		food_id := c.Param("food_id")
 
-		var food models.Food
-		
+		id := c.Query("food_id")
+		log.Printf("Received request for food with ID: %s", id)
 
+		if id == "" {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Food ID is required"})
+			return
+		}
+
+		idint, err := strconv.Atoi(id)
+		if err != nil {
+			log.Printf("Error converting food_id to integer: %v", err)
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Food ID"})
+			return
+		}
+		var idint64 int64 = int64(idint)
+
+		data, err := database.GetFoodByFoodIdDB(idint64, c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting data from db"})
+			return
+		}
+
+		// Return the food data
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Fetched Food Data",
+			Status:  http.StatusOK,
+			Data:    data,
+		})
 	}
 }
 
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		foodName := c.Query("food_name")
+		if foodNmae == " " {
+
+		}
+		foodPrice := c.Query("food_price")
 
 	}
 }
@@ -36,10 +66,10 @@ func UpdateFood() gin.HandlerFunc {
 	}
 }
 
-func Round(num float64) int {
+// func Round(num float64) int {
 
-}
+// }
 
-func Fixed(num float64, preceision int) float64 {
+// func Fixed(num float64, preceision int) float64 {
 
-}
+// }
