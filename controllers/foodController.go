@@ -63,14 +63,21 @@ func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var inputfood models.Food
 
-		if err := c.BindJSON(&inputfood); err != nil {
+		if err := c.ShouldBindJSON(&inputfood); err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Input"})
+			return
 		}
 
-		createfooditem, err := database.CreateFoodDB(inputfood)
-		if err != nil {
+		if err := database.CreateFoodDB(inputfood); err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error in creating food item in database"})
+			return
 		}
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Food item created successfully",
+			Status:  http.StatusOK,
+			Data:    inputfood,
+		})
 	}
 }
 
