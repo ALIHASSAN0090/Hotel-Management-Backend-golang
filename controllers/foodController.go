@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,12 +62,13 @@ func GetFood() gin.HandlerFunc {
 
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var inputfood models.Food
+		var inputfood models.CreateFood
 
 		if err := c.ShouldBindJSON(&inputfood); err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Input"})
 			return
 		}
+		inputfood.CreatedAt = time.Now()
 
 		if err := database.CreateFoodDB(inputfood); err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error in creating food item in database"})
