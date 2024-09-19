@@ -9,5 +9,4 @@ type Food struct {
 	CreatedAt time.Time `json:"created_at" db:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at" db:"autoUpdateTime"`
 	MenuID    int64     `json:"menu_id" db:"type:varchar(100);not null"`
-	Table_id  int64     `json:"table_id" db:"type:varchar(100);not null"`
 }

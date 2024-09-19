@@ -10,16 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetFoodDB(incomingFoodId int64, c *gin.Context) (data models.Food, err error) {
+func GetFoodByFoodIdDB(incomingFoodId int64, c *gin.Context) (data models.Food, err error) {
 
-	query := `SELECT name, price , menu_id, table_id FROM food_items WHERE id = $1`
+	query := `SELECT name, price , menu_id FROM food_items WHERE id = $1`
 	var food models.Food
 
 	err = DbConn.QueryRow(query, incomingFoodId).Scan(
 		&food.Name,
 		&food.Price,
 		&food.MenuID,
-		&food.Table_id,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {

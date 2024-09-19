@@ -10,9 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetFoods() gin.HandlerFunc {
+func GetAllFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		allfoods, err := database.GetAllFoodsDB(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting all foods from database"})
+		}
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Fetched Food Data",
+			Status:  http.StatusOK,
+			Data:    allfoods,
+		})
 	}
 }
 func GetFood() gin.HandlerFunc {
@@ -51,12 +61,16 @@ func GetFood() gin.HandlerFunc {
 
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		foodName := c.Query("food_name")
-		if foodNmae == " " {
+		var inputfood models.Food
 
+		if err := c.BindJSON(&inputfood); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Input"})
 		}
-		foodPrice := c.Query("food_price")
 
+		createfooditem, err := database.CreateFoodDB(inputfood)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error in creating food item in database"})
+		}
 	}
 }
 
