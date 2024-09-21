@@ -68,6 +68,7 @@ func CreateFood() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Input"})
 			return
 		}
+
 		inputfood.CreatedAt = time.Now()
 
 		if err := database.CreateFoodDB(inputfood); err != nil {
@@ -85,7 +86,39 @@ func CreateFood() gin.HandlerFunc {
 
 func UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var fooddata models.UpdateFood
 
+		// Binding and validating the input JSON
+		if err := c.ShouldBindJSON(&fooddata); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input data"})
+			return
+		}
+
+		// Additional validation for fields (optional, based on your needs)
+		if fooddata.Name == "" {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Name field is required"})
+			return
+		}
+		if fooddata.Price <= 0 {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Price must be a positive number"})
+			return
+		}
+		if fooddata.MenuID <= 0 {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "MenuID must be valid"})
+			return
+		}
+
+		// Updating the food item in the database
+		if err := database.UpdateFoodDB(c, fooddata); err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error updating food item in the database"})
+			return
+		}
+
+		// If successful, return a success response
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Food item updated successfully",
+			"data":    fooddata,
+		})
 	}
 }
 
