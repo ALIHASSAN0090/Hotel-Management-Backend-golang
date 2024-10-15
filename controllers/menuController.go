@@ -1,9 +1,27 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"golang-hotel-management/database"
+	"golang-hotel-management/models"
+	"net/http"
 
-func GetMenus() gin.HandlerFunc {
+	"github.com/gin-gonic/gin"
+)
+
+func GetAllMenusWithFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		data, err := database.GetAllMenusWithFoodsDB(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Fetched All Menus",
+			Status:  200,
+			Data:    data,
+		})
 
 	}
 }

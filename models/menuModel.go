@@ -12,3 +12,19 @@ type Menu struct {
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 	MenuID    int64     `json:"menu_id" gorm:"uniqueIndex;not null"`
 }
+
+type FoodItem struct {
+	ID     int64   `json:"id" db:"id"`
+	Name   string  `json:"name" db:"name"`
+	Price  float64 `json:"price" db:"price"`
+	MenuID int64   `json:"menu_id" db:"menu_id"`
+}
+
+type MenuItems struct {
+	ID        int64      `json:"id" db:"id"`
+	Name      string     `json:"name" db:"name"`
+	Category  string     `json:"category" db:"category"`
+	Foods     []FoodItem `json:"foods" db:"foods"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+}
