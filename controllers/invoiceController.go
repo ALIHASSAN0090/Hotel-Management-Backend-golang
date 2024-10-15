@@ -24,8 +24,8 @@ func GetAllInvoices() gin.HandlerFunc {
 
 func GetInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		order_id_String := c.Query("order_id")
-		order_id, err := strconv.ParseInt(order_id_String, 10, 64)
+		order_id, err := strconv.ParseInt(c.Param("order_id"), 10, 64)
+
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order_id format"})
 			return
@@ -65,5 +65,22 @@ func CreateInvoice() gin.HandlerFunc {
 func UpdateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		var invoice models.Invoice
+
+		id, err := strconv.ParseInt(c.Param("invoice_id"), 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "error in getting id"})
+		}
+		err = c.ShouldBindJSON(&invoice)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		}
+
+		data, err := database.UpdateInvoice(invoice, id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		}
+
+		c.JSON(http.StatusOK, data)
 	}
 }
