@@ -13,6 +13,18 @@ type Menu struct {
 	MenuID    int64     `json:"menu_id" gorm:"uniqueIndex;not null"`
 }
 
+type CreateMenu struct {
+	Name     string `json:"name" gorm:"type:varchar(100);not null"`
+	Category string `json:"category" gorm:"type:varchar(100);not null"`
+}
+
+type UpdateMenu struct {
+	ID        int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	Name      string    `json:"name" gorm:"type:varchar(100);not null"`
+	Category  string    `json:"category" gorm:"type:varchar(100);not null"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
 type FoodItem struct {
 	ID     int64   `json:"id" db:"id"`
 	Name   string  `json:"name" db:"name"`

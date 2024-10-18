@@ -13,8 +13,8 @@ import (
 
 func GetAllFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		allfoods, err := database.GetAllFoodsDB(c)
+		menu_id, err := strconv.ParseInt(c.Param("menu_id"), 10, 64)
+		allfoods, err := database.GetAllFoodsDB(c, menu_id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting all foods from database"})
 		}

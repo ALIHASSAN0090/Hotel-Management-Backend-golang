@@ -26,18 +26,40 @@ func GetAllMenusWithFoods() gin.HandlerFunc {
 	}
 }
 
-func GetMenu() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-	}
-}
 func CreateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		var NewMenu models.CreateMenu
+
+		if err := c.ShouldBindJSON(&NewMenu); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		}
+
+		if err := database.CreateMenuDB(c, NewMenu); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"Error": "Failed to Create Menu Item"})
+		}
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Menu Created Succesfully",
+			Status:  200,
+		})
 	}
 }
 func UpdateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var UpdateMenu models.UpdateMenu
 
+		if err := c.ShouldBindJSON(&UpdateMenu); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		}
+
+		data, err := database.UpdateMenuDB(c, UpdateMenu)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"Error": "Failed to Create Menu Item"})
+		}
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Menu Created Succesfully",
+			Status:  200,
+			Data:    data,
+		})
 	}
 }

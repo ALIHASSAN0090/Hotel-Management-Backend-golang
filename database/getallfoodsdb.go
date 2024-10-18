@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllFoodsDB(c *gin.Context) ([]models.Food, error) {
+func GetAllFoodsDB(c *gin.Context, incomingMenuId int64) ([]models.Food, error) {
 	var foods []models.Food
-	query := `SELECT id, name, price, menu_id FROM food_items`
+	query := `SELECT id, name, price, menu_id FROM food_items where menu_id = $1`
 
-	rows, err := DbConn.Query(query)
+	rows, err := DbConn.Query(query, incomingMenuId)
 	if err != nil {
 		return nil, err
 	}
