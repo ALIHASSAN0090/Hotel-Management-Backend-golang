@@ -27,3 +27,12 @@ type FoodItems struct {
 	FoodCategory string  `json:"food_category" db:"food_category"`
 	Category     string  `json:"category" db:"category"`
 }
+
+type CreateOrder struct {
+	UserID        int64    `json:"user_id" db:"user_id"`
+	FoodItems_IDs []FoodID `json:"food_items" db:"food_items"`
+}
+
+type FoodID struct {
+	ID int64 `json:"id" db:"id"`
+}
