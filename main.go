@@ -21,9 +21,9 @@ func main() {
 
 	routes.FoodRoutes(router)
 	routes.MenuRoutes(router)
-	routes.TableRoutes(router)
+
 	routes.OrderRoutes(router)
-	routes.OrderItemsRoutes(router)
+
 	routes.InvoiceRoutes(router)
 
 	db, err := database.Connect()
