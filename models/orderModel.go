@@ -36,3 +36,8 @@ type CreateOrder struct {
 type FoodID struct {
 	ID int64 `json:"id" db:"id"`
 }
+
+type UpdateOrder struct {
+	OrderId int64  `json:"id" db:"id"`
+	Status  string `json:"status" db:"status"`
+}

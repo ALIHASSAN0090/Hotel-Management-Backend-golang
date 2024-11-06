@@ -72,6 +72,19 @@ func CreateOrder() gin.HandlerFunc {
 }
 func UpdateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		id, err := strconv.ParseInt(c.Param("order_id"), 10, 64)
+
+		data, err := database.UpdateOrderDB(c, id)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in Getting Data From Database"})
+			return
+		}
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Order Created and fetched Succesfully",
+			Status:  200,
+			Data:    data,
+		})
 
 	}
 }
