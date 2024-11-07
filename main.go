@@ -2,6 +2,7 @@ package main
 
 import (
 	"golang-hotel-management/database"
+	"golang-hotel-management/middleware"
 	"golang-hotel-management/routes"
 	"log"
 	"os"
@@ -16,12 +17,11 @@ func main() {
 	}
 	router := gin.New()
 	router.Use(gin.Logger())
-	routes.UserRoutes(router)
-	// router.Use(middleware.Authentication())
 
+	router.Use(middleware.AuthMiddleware())
+	routes.UserRoutes(router)
 	routes.FoodRoutes(router)
 	routes.MenuRoutes(router)
-
 	routes.OrderRoutes(router)
 
 	routes.InvoiceRoutes(router)
@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
-	defer db.Close() // Ensure the database connection is closed when the application exits
+	defer db.Close()
 
 	router.Run(":3000")
 }
