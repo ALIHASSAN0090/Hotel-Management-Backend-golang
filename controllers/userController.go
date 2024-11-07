@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"golang-hotel-management/database"
+	"golang-hotel-management/middleware"
 	"golang-hotel-management/models"
 	"log"
 	"net/http"
@@ -25,6 +26,41 @@ func GetUser() gin.HandlerFunc {
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		var User models.Login
+		log.Printf("User struct initialized: %+v", User)
+
+		if err := c.ShouldBindJSON(&User); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
+		}
+
+		log.Printf("Received login data: %+v", User)
+
+		storedUser, err := database.GetUserByEmailDB(c, User.Email)
+		if err != nil {
+			c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Email not found"})
+			return
+		}
+
+		if match, _ := VerifyPassword(storedUser.PasswordHash, User.PasswordHash); !match {
+			c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid credentials"})
+			return
+		}
+
+		token, err := middleware.GenerateToken(uint(storedUser.ID), storedUser.Email, storedUser.Username, storedUser.Role)
+		if err != nil {
+			log.Printf("Error generating token: %v", err) // Log the error
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Token generation failed"})
+			return
+		}
+
+		log.Printf("Token generated successfully for user ID: %d", storedUser.ID) // Log successful token generation
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "Login Successful",
+			Status:  200,
+			Data:    gin.H{"token": token},
+		})
 	}
 }
 
@@ -55,7 +91,6 @@ func Signup() gin.HandlerFunc {
 			}
 		}
 
-		// Debugging: Log the hashed password
 		log.Printf("Hashed password: %s", User.PasswordHash)
 
 		createdUser, err := database.CreateUser(c, User)
@@ -94,4 +129,20 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	}
 	log.Printf("Password verified successfully")
 	return true, "Password matched"
+}
+
+func CheckHeader() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, _ := c.Get("userID")
+		email, _ := c.Get("email")
+		username, _ := c.Get("username")
+		role, _ := c.Get("role")
+
+		c.JSON(http.StatusOK, gin.H{
+			"userID":   userID,
+			"email":    email,
+			"username": username,
+			"role":     role,
+		})
+	}
 }
