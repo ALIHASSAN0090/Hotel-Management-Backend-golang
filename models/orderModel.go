@@ -41,3 +41,29 @@ type UpdateOrder struct {
 	OrderId int64  `json:"id" db:"id"`
 	Status  string `json:"status" db:"status"`
 }
+
+type Reservation struct {
+	ID              int64      `db:"id" json:"id"`
+	OrderID         int64      `db:"order_id" json:"order_id"`
+	NumberOfPersons int64      `db:"number_of_persons" json:"number_of_persons"`
+	DineInTime      time.Time  `db:"dine_in_time" json:"dine_in_time"`
+	CreatedAt       time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt       *time.Time `db:"updated_at,omitempty" json:"updated_at,omitempty"`
+	DeletedAt       *time.Time `db:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+}
+
+type MakeReservation struct {
+	ID              int64      `db:"id,omitempty" json:"id,omitempty"`
+	OrderID         int64      `db:"order_id,omitempty" json:"order_id,omitempty"`
+	NumberOfPersons int64      `db:"number_of_persons,omitempty" json:"number_of_persons,omitempty"`
+	DineInDate      time.Time  `db:"dine_in_date,omitempty" json:"dine_in_date,omitempty"`
+	DineInTime      time.Time  `db:"dine_in_time,omitempty" json:"dine_in_time,omitempty"`
+	CreatedAt       time.Time  `db:"created_at,omitempty" json:"created_at,omitempty"`
+	UpdatedAt       *time.Time `db:"updated_at,omitempty" json:"updated_at,omitempty"`
+	DeletedAt       *time.Time `db:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+}
+
+type CombinedOrderReservation struct {
+	CreateOrder     CreateOrder     `json:"create_order"`
+	MakeReservation MakeReservation `json:"make_reservation"`
+}
