@@ -60,6 +60,12 @@ func CreateOrder() gin.HandlerFunc {
 			return
 		}
 
+		InvoiceData, err := database.CreateInvoiceDB(OrderId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
+		}
+
 		Data, err := database.GetOrderDB(c, OrderId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
@@ -73,20 +79,25 @@ func CreateOrder() gin.HandlerFunc {
 				return
 			}
 			c.JSON(http.StatusOK, models.Response{
-				Message: "Order and Reservation Created and Fetched Successfully",
+				Message: "Order , invoice and Reservation Created and Fetched Successfully",
 				Status:  200,
 				Data: gin.H{
 					"order":       Data,
 					"reservation": Reservation,
+					"Invoice":     InvoiceData,
 				},
 			})
 		} else {
-
 			c.JSON(http.StatusOK, models.Response{
-				Message: "Order Created and Fetched Successfully",
+				Message: "Order and Invoice Created and Fetched Successfully",
 				Status:  200,
-				Data:    Data,
+				Data: gin.H{
+					"order": Data,
+
+					"Invoice": InvoiceData,
+				},
 			})
+
 		}
 	}
 }

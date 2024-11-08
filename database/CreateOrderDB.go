@@ -49,6 +49,8 @@ func CreateOrderDB(c *gin.Context, createOrder models.CombinedOrderReservation) 
 			return 0, 0, err
 		}
 
+		
+
 		return ID, resID, nil
 
 	}

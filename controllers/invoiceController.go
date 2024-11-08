@@ -44,20 +44,20 @@ func GetInvoice() gin.HandlerFunc {
 func CreateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		var invoice models.Invoice
+		// var invoice models.Invoice
 
-		err := c.ShouldBindJSON(&invoice)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
-		}
+		// err := c.ShouldBindJSON(&invoice)
+		// if err != nil {
+		// 	c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+		// }
 
-		invoiceres, err := database.CreateInvoiceDB(invoice)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+		// invoiceres, err := database.CreateInvoiceDB(invoice)
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// 	return
+		// }
 
-		c.JSON(http.StatusOK, invoiceres)
+		// c.JSON(http.StatusOK, invoiceres)
 
 	}
 }

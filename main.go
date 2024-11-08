@@ -10,20 +10,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	port := os.Getenv("PORT")
+var port string
+
+func init() {
+	port = os.Getenv("PORT")
 	if port == "" {
+		log.Println("Port not found in environment, using default port 3000")
 		port = "3000"
 	}
+}
+
+func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
-
-	router.Use(middleware.AuthMiddleware())
 	routes.UserRoutes(router)
+	router.Use(middleware.AuthMiddleware())
 	routes.FoodRoutes(router)
 	routes.MenuRoutes(router)
 	routes.OrderRoutes(router)
-
 	routes.InvoiceRoutes(router)
 
 	db, err := database.Connect()
@@ -32,5 +36,5 @@ func main() {
 	}
 	defer db.Close()
 
-	router.Run(":3000")
+	router.Run(":" + port)
 }
