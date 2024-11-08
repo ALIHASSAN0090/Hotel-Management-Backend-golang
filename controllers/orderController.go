@@ -66,26 +66,34 @@ func CreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		Reservation, err := database.GetReservationDB(c, reservationId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
-			return
-		}
+		if reservationId != 0 {
+			Reservation, err := database.GetReservationDB(c, reservationId)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, models.Response{
+				Message: "Order and Reservation Created and Fetched Successfully",
+				Status:  200,
+				Data: gin.H{
+					"order":       Data,
+					"reservation": Reservation,
+				},
+			})
+		} else {
 
-		c.JSON(http.StatusOK, models.Response{
-			Message: "Order and Reservation Created and Fetched Successfully",
-			Status:  200,
-			Data: gin.H{
-				"order":       Data,
-				"reservation": Reservation,
-			},
-		})
+			c.JSON(http.StatusOK, models.Response{
+				Message: "Order Created and Fetched Successfully",
+				Status:  200,
+				Data:    Data,
+			})
+		}
 	}
 }
 
 func UpdateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id, err := strconv.ParseInt(c.Param("order_id"), 10, 64)
+		id, _ := strconv.ParseInt(c.Param("order_id"), 10, 64)
 
 		data, err := database.UpdateOrderDB(c, id)
 		if err != nil {
