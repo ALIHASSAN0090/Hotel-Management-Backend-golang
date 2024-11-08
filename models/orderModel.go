@@ -43,13 +43,14 @@ type UpdateOrder struct {
 }
 
 type Reservation struct {
-	ID              int64      `db:"id" json:"id"`
-	OrderID         int64      `db:"order_id" json:"order_id"`
-	NumberOfPersons int64      `db:"number_of_persons" json:"number_of_persons"`
-	DineInTime      time.Time  `db:"dine_in_time" json:"dine_in_time"`
-	CreatedAt       time.Time  `db:"created_at" json:"created_at"`
-	UpdatedAt       *time.Time `db:"updated_at,omitempty" json:"updated_at,omitempty"`
-	DeletedAt       *time.Time `db:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+	ID                  int64      `db:"id" json:"id"`
+	OrderID             int64      `db:"order_id" json:"order_id"`
+	NumberOfPersons     int64      `db:"number_of_persons" json:"number_of_persons"`
+	DineInTime          time.Time  `db:"dine_in_time" json:"dine_in_time"`
+	CreatedAt           time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt           *time.Time `db:"updated_at,omitempty" json:"updated_at,omitempty"`
+	DeletedAt           *time.Time `db:"deleted_at,omitempty" json:"deleted_at,omitempty"`
+	FormattedDineInTime string     `db:"formatted_dine_in_time" json:"formatted_dine_in_time,omitempty"`
 }
 
 type MakeReservation struct {

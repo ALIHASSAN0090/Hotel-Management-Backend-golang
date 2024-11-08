@@ -62,6 +62,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		username := claims.Username
 		role := claims.Role
 		fmt.Printf("Extracted Claims - ID: %s, Email: %s, Username: %s , role : %s\n", userID, email, username, role)
+
 		c.Set("userID", userID)
 		c.Set("email", email)
 		c.Set("username", username)
