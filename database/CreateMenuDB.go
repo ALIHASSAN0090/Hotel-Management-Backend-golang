@@ -7,13 +7,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateMenuDB(c *gin.Context, incomingMenu models.CreateMenu) error {
+func CreateMenuDB(c *gin.Context, incomingMenu models.CreateMenu) (models.Menu, error) {
 
-	query := `INSERT INTO menus (name , category , created_at) values ($1,$2,NOW())`
+	var createdMenu models.Menu
 
-	if _, err := DbConn.Exec(query, incomingMenu.Name, incomingMenu.Category); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Error in executing query"})
-		return err
+	duplicationQuery := `SELECT id FROM menus WHERE name = $1 AND category = $2`
+	var existingID int
+	if err := DbConn.QueryRow(duplicationQuery, incomingMenu.Name, incomingMenu.Category).Scan(&existingID); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Menu item already exists"})
+		return models.Menu{}, err
 	}
-	return nil
+
+	query := `INSERT INTO menus (name, category, created_at) VALUES ($1, $2, NOW()) RETURNING id, name, category, created_at`
+
+	if err := DbConn.QueryRow(query, incomingMenu.Name, incomingMenu.Category).Scan(&createdMenu.ID, &createdMenu.Name, &createdMenu.Category, &createdMenu.CreatedAt); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Error in executing query"})
+		return models.Menu{}, err
+	}
+
+	return createdMenu, nil
 }

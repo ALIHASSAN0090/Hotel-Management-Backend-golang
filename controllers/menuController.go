@@ -35,12 +35,15 @@ func CreateMenu() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 		}
 
-		if err := database.CreateMenuDB(c, NewMenu); err != nil {
+		createdMenu, err := database.CreateMenuDB(c, NewMenu)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"Error": "Failed to Create Menu Item"})
+			return
 		}
 		c.JSON(http.StatusOK, models.Response{
 			Message: "Menu Created Succesfully",
 			Status:  200,
+			Data:    createdMenu,
 		})
 	}
 }

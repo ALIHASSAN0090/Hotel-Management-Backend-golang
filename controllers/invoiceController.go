@@ -65,20 +65,17 @@ func CreateInvoice() gin.HandlerFunc {
 func UpdateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		var invoice models.Invoice
+		var invoice models.UpdateInvoice
 
-		id, err := strconv.ParseInt(c.Param("invoice_id"), 10, 64)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "error in getting id"})
-		}
-		err = c.ShouldBindJSON(&invoice)
-		if err != nil {
+		if err := c.ShouldBindJSON(&invoice); err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
 		}
 
-		data, err := database.UpdateInvoice(invoice, id)
+		data, err := database.UpdateInvoice(invoice)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: err.Error()})
+			return
 		}
 
 		c.JSON(http.StatusOK, data)

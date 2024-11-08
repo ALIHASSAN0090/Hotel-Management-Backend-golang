@@ -13,7 +13,6 @@ func GetOrderDB(c *gin.Context, incmoingOrderId int64) (*models.AllOrders, error
 	query := `SELECT 
     o.id AS Order_Id, 
     o.total_price, 
-    o.status, 
     json_agg(
         json_build_object(
             'food_item_id', ofi.food_item_id,
@@ -34,17 +33,25 @@ JOIN
 WHERE 
     o.id = $1
 GROUP BY 
-    o.id, o.total_price, o.status;`
+    o.id, o.total_price;`
 
 	row := DbConn.QueryRow(query, incmoingOrderId)
 
 	var order models.AllOrders
 	var foodItems string
 
-	if err := row.Scan(&order.OrderID, &order.TotalPrice, &order.Status, &foodItems); err != nil {
+	if err := row.Scan(&order.OrderID, &order.TotalPrice, &foodItems); err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return nil, err
 	}
+
+	var paymentStatus string
+	paymentQuery := `SELECT payment_status FROM invoices WHERE order_id = $1`
+	if err := DbConn.QueryRow(paymentQuery, incmoingOrderId).Scan(&paymentStatus); err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return nil, err
+	}
+	order.Status = paymentStatus
 
 	if err := json.Unmarshal([]byte(foodItems), &order.FoodItems); err != nil {
 		c.JSON(http.StatusInternalServerError, err)
