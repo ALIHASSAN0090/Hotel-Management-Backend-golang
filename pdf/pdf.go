@@ -7,7 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
+
+	"gopkg.in/gomail.v2"
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
@@ -38,19 +39,13 @@ func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerE
 
 	fmt.Println("PDF generated successfully!")
 
-	err = SendEmailNotification(pdfFile, smtpHost, smtpPort, senderUserName, senderPassword, *clientEmail)
+	err = SendEmailNotification(pdfFile, smtpHost, smtpPort, senderUserName, senderPassword, customerEmail)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
 	fmt.Println("Email sent successfully")
 	return nil
-}
-
-func getDate() string {
-	currentTime := time.Now()
-
-	return currentTime.Format("02-01-2006")
 }
 
 func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64) error {
@@ -64,15 +59,15 @@ func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail
 	// For example, you could replace placeholders in the HTML with these values
 	htmlContentStr := string(htmlContent)
 
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{ClientCompanyAddress}}", clientCompanyAddress)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{ClientCompanyEmail}}", clientCompanyEmail)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{ClientEmail}}", clientEmail)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{CustomerNumber}}", customerNumber)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{CustomerFullLegalName}}", CustomerFullLegalName)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Price}}", fmt.Sprintf("%.2f", price))
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{TotalPrice}}", fmt.Sprintf("%.2f", totalPrice))
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Date}}", date)
-	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{ServiceName}}", serviceName)
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{CustomerFullLegalName}}", customerName)
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{ClientEmail}}", customerEmail)
+
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Reservation Date}}", resDate)
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Reservation Time}}", resTime)
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Price}}", fmt.Sprintf("%.2f", totalPrice))
+
+	// htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Date}}", date)
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Number of persons}}", fmt.Sprintf("%d", numberOfPersons))
 
 	// Set up Chrome options
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
@@ -130,7 +125,7 @@ func SendEmailNotification(pdfFile, smtpHost, smtpPort, senderUserName, senderPa
 	m.SetHeader("To", recieverEmail)
 	m.SetHeader("Subject", "Your Invoice")
 	m.SetBody("text/plain", "Please find the attached PDF document for your review.")
-	m.Attach(pdfFile) // Attach the PDF file
+	m.Attach(pdfFile)
 
 	port, err := strconv.Atoi(smtpPort)
 	if err != nil {

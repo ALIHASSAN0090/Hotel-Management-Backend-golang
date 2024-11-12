@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"golang-hotel-management/database"
 	"golang-hotel-management/models"
 	"golang-hotel-management/pdf"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -82,10 +84,19 @@ func CreateOrder() gin.HandlerFunc {
 			}
 
 			// email data:
-			customerName := c.GetHeader("username")
-			customerEmail := c.GetHeader("email")
-			if customerName == "" || customerEmail == "" {
+			customerName, existsName := c.Get("username")
+			customerEmail, existsEmail := c.Get("email")
+			if !existsName || !existsEmail {
+				log.Printf("Missing customer information: Name: %v, Email: %v", customerName, customerEmail)
 				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Customer name or email not found in header"})
+				return
+			}
+
+			customerNameStr, okName := customerName.(string)
+			customerEmailStr, okEmail := customerEmail.(string)
+			if !okName || !okEmail {
+				log.Printf("Customer information is not of type string: Name: %v, Email: %v", customerName, customerEmail)
+				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Customer name or email is not of type string"})
 				return
 			}
 
@@ -94,9 +105,12 @@ func CreateOrder() gin.HandlerFunc {
 			numberOfPersons := createOrder.MakeReservation.NumberOfPersons
 			foods := createOrder.CreateOrder.FoodItems_IDs
 
-			totalPrice, err := database.GetTotalPrice(foods)
+			totalPrice, _ := database.GetTotalPrice(foods)
 
-			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerName, customerEmail, resDate, resTime, numberOfPersons, totalPrice)
+			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice)
+			if err != nil {
+				fmt.Println("Error generating and sending PDF:", err)
+			}
 
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order , invoice and Reservation Created and Fetched Successfully",
