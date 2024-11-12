@@ -81,7 +81,22 @@ func CreateOrder() gin.HandlerFunc {
 				return
 			}
 
-			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf")
+			// email data:
+			customerName := c.GetHeader("username")
+			customerEmail := c.GetHeader("email")
+			if customerName == "" || customerEmail == "" {
+				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Customer name or email not found in header"})
+				return
+			}
+
+			resDate := createOrder.MakeReservation.DineInDate.Format("2006-01-02")
+			resTime := createOrder.MakeReservation.DineInTime.Format("15:04:05")
+			numberOfPersons := createOrder.MakeReservation.NumberOfPersons
+			foods := createOrder.CreateOrder.FoodItems_IDs
+
+			totalPrice, err := database.GetTotalPrice(foods)
+
+			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerName, customerEmail, resDate, resTime, numberOfPersons, totalPrice)
 
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order , invoice and Reservation Created and Fetched Successfully",

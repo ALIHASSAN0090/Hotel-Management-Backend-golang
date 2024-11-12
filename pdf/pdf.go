@@ -12,29 +12,14 @@ import (
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/joho/godotenv"
-	gomail "gopkg.in/mail.v2"
 )
 
-func GenerateAndSendPDF(htmlFile, pdfFile string) error {
-
-	clientCompanyAddress := request.CompanyAddress
-	clientCompanyEmail := request.CompanyEmail
-
-	clientEmail := request.CustomerPersonalEmail
-	customergovNumber := request.CustomergovIDNum
-	CustomerFullLegalName := request.CustomerFullLegalName
-
-	price := request.Decided_price
-	totalPrice := request.TotalPrice
-
-	date := getDate()
+func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64) error {
 
 	err := godotenv.Load("./.env")
 	if err != nil {
 		return fmt.Errorf("error loading .env file: %v", err)
 	}
-
-	
 
 	smtpHost := os.Getenv("MAIL_HOST")
 	smtpPort := os.Getenv("MAIL_PORT")
@@ -46,7 +31,7 @@ func GenerateAndSendPDF(htmlFile, pdfFile string) error {
 		return fmt.Errorf("SMTP configuration and recipient email must be set in the environment variables")
 	}
 
-	err = GeneratePDF(htmlFile, pdfFile, *clientCompanyAddress, *clientCompanyEmail, *clientEmail, *customergovNumber, *CustomerFullLegalName, *price, *totalPrice, date, strings.Join(servicenames, ", "))
+	err = GeneratePDF(htmlFile, pdfFile, customerName, customerEmail, resDate, resTime, numberOfPersons, totalPrice)
 	if err != nil {
 		return fmt.Errorf("failed to generate PDF: %v", err)
 	}
@@ -68,7 +53,7 @@ func getDate() string {
 	return currentTime.Format("02-01-2006")
 }
 
-func GeneratePDF(htmlFile, outputPath string, clientCompanyAddress, clientCompanyEmail, clientEmail, customerNumber, CustomerFullLegalName string, price, totalPrice float64, date string, serviceName string) error {
+func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64) error {
 	// Read the HTML content
 	htmlContent, err := os.ReadFile(htmlFile)
 	if err != nil {
