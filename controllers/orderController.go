@@ -3,6 +3,7 @@ package controllers
 import (
 	"golang-hotel-management/database"
 	"golang-hotel-management/models"
+	"golang-hotel-management/pdf"
 	"net/http"
 	"strconv"
 
@@ -48,6 +49,7 @@ func GetOrder() gin.HandlerFunc {
 
 func CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		var createOrder models.CombinedOrderReservation
 		if err := c.ShouldBindJSON(&createOrder); err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
@@ -78,6 +80,9 @@ func CreateOrder() gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 				return
 			}
+
+			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf")
+
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order , invoice and Reservation Created and Fetched Successfully",
 				Status:  200,
