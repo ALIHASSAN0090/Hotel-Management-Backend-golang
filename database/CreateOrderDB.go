@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"golang-hotel-management/models"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,8 +50,6 @@ func CreateOrderDB(c *gin.Context, createOrder models.CombinedOrderReservation) 
 			return 0, 0, err
 		}
 
-		
-
 		return ID, resID, nil
 
 	}
@@ -70,6 +69,22 @@ func GetTotalPrice(foodids []models.FoodID) (float64, error) {
 	}
 
 	return totalPrice, nil
+}
+
+func GetOrderFoodsDB(foodids []models.FoodID) (string, error) {
+
+	var foodNames []string
+	for _, foodid := range foodids {
+		var name string
+		query := `SELECT name FROM food_items WHERE id = $1`
+		err := DbConn.QueryRow(query, foodid.ID).Scan(&name)
+		if err != nil {
+			return "", err
+		}
+		foodNames = append(foodNames, name)
+	}
+
+	return strings.Join(foodNames, ", "), nil
 }
 
 func CalculateDineInDateTime(dineInDate, dineInTime time.Time) time.Time {

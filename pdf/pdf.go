@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/gomail.v2"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64) error {
+func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64, allfoodNames string) error {
 
 	err := godotenv.Load("./.env")
 	if err != nil {
@@ -26,13 +27,13 @@ func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerE
 	smtpPort := os.Getenv("MAIL_PORT")
 	senderUserName := os.Getenv("MAIL_USERNAME")
 	senderPassword := os.Getenv("MAIL_PASSWORD")
-	// recieverEmail1 := os.Getenv("RECIEVER_EMAIL")
+	
 
 	if smtpHost == "" || smtpPort == "" || senderUserName == "" || senderPassword == "" {
 		return fmt.Errorf("SMTP configuration and recipient email must be set in the environment variables")
 	}
 
-	err = GeneratePDF(htmlFile, pdfFile, customerName, customerEmail, resDate, resTime, numberOfPersons, totalPrice)
+	err = GeneratePDF(htmlFile, pdfFile, customerName, customerEmail, resDate, resTime, numberOfPersons, totalPrice, allfoodNames)
 	if err != nil {
 		return fmt.Errorf("failed to generate PDF: %v", err)
 	}
@@ -48,15 +49,13 @@ func GenerateAndSendPDF(htmlFile, pdfFile string, customerName string, customerE
 	return nil
 }
 
-func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64) error {
-	// Read the HTML content
+func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail string, resDate, resTime string, numberOfPersons int64, totalPrice float64, allfoods string) error {
+
 	htmlContent, err := os.ReadFile(htmlFile)
 	if err != nil {
 		return fmt.Errorf("failed to read HTML file: %v", err)
 	}
 
-	// Optionally, modify the HTML content with the provided values
-	// For example, you could replace placeholders in the HTML with these values
 	htmlContentStr := string(htmlContent)
 
 	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{CustomerFullLegalName}}", customerName)
@@ -65,11 +64,12 @@ func GeneratePDF(htmlFile, outputPath string, customerName string, customerEmail
 	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Reservation Date}}", resDate)
 	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Reservation Time}}", resTime)
 	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Price}}", fmt.Sprintf("%.2f", totalPrice))
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Date}}", GetCurrentDate())
 
-	// htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Date}}", date)
+	foodsList := strings.ReplaceAll(allfoods, ",", ",\n")
+	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Food Details}}", foodsList)
 	htmlContentStr = strings.ReplaceAll(htmlContentStr, "{{Number of persons}}", fmt.Sprintf("%d", numberOfPersons))
 
-	// Set up Chrome options
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
@@ -140,4 +140,7 @@ func SendEmailNotification(pdfFile, smtpHost, smtpPort, senderUserName, senderPa
 	}
 
 	return nil
+}
+func GetCurrentDate() string {
+	return time.Now().Format("2006-01-02")
 }

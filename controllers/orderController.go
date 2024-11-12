@@ -83,37 +83,13 @@ func CreateOrder() gin.HandlerFunc {
 				return
 			}
 
-			// email data:
-			customerName, existsName := c.Get("username")
-			customerEmail, existsEmail := c.Get("email")
-			if !existsName || !existsEmail {
-				log.Printf("Missing customer information: Name: %v, Email: %v", customerName, customerEmail)
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Customer name or email not found in header"})
+			if err := prepareAndSendEmail(c, createOrder); err != nil {
+				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 				return
-			}
-
-			customerNameStr, okName := customerName.(string)
-			customerEmailStr, okEmail := customerEmail.(string)
-			if !okName || !okEmail {
-				log.Printf("Customer information is not of type string: Name: %v, Email: %v", customerName, customerEmail)
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Customer name or email is not of type string"})
-				return
-			}
-
-			resDate := createOrder.MakeReservation.DineInDate.Format("2006-01-02")
-			resTime := createOrder.MakeReservation.DineInTime.Format("15:04:05")
-			numberOfPersons := createOrder.MakeReservation.NumberOfPersons
-			foods := createOrder.CreateOrder.FoodItems_IDs
-
-			totalPrice, _ := database.GetTotalPrice(foods)
-
-			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice)
-			if err != nil {
-				fmt.Println("Error generating and sending PDF:", err)
 			}
 
 			c.JSON(http.StatusOK, models.Response{
-				Message: "Order , invoice and Reservation Created and Fetched Successfully",
+				Message: "Order, invoice, and Reservation Created and Fetched Successfully",
 				Status:  200,
 				Data: gin.H{
 					"order":       Data,
@@ -126,14 +102,43 @@ func CreateOrder() gin.HandlerFunc {
 				Message: "Order and Invoice Created and Fetched Successfully",
 				Status:  200,
 				Data: gin.H{
-					"order": Data,
-
+					"order":   Data,
 					"Invoice": InvoiceData,
 				},
 			})
-
 		}
 	}
+}
+
+func prepareAndSendEmail(c *gin.Context, createOrder models.CombinedOrderReservation) error {
+	customerName, existsName := c.Get("username")
+	customerEmail, existsEmail := c.Get("email")
+	if !existsName || !existsEmail {
+		log.Printf("Missing customer information: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email not found in header")
+	}
+
+	customerNameStr, okName := customerName.(string)
+	customerEmailStr, okEmail := customerEmail.(string)
+	if !okName || !okEmail {
+		log.Printf("Customer information is not of type string: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email is not of type string")
+	}
+
+	resDate := createOrder.MakeReservation.DineInDate.Format("2006-01-02")
+	resTime := createOrder.MakeReservation.DineInTime.Format("15:04:05")
+	numberOfPersons := createOrder.MakeReservation.NumberOfPersons
+	foods := createOrder.CreateOrder.FoodItems_IDs
+
+	totalPrice, _ := database.GetTotalPrice(foods)
+	totalFoods, _ := database.GetOrderFoodsDB(foods)
+	err := pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice, totalFoods)
+	if err != nil {
+		fmt.Println("Error generating and sending PDF:", err)
+		return err
+	}
+
+	return nil
 }
 
 func UpdateOrder() gin.HandlerFunc {
