@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Document</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Tafel Sans Pro', sans-serif;
+        }
+
+        .content {
+            margin-bottom: 100px; /* Ensure space for the footer */
+        }
+
+        .footer {
+            position: fixed; /* Ensure footer is always at the bottom */
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            border-top: 1px solid black;
+            background: white;
+            box-sizing: border-box;
+            padding: 15px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: nowrap; /* Prevent wrapping */
+        }
+
+        .footer > div {
+            flex: 1; /* Each div takes equal space */
+            padding: 0 15px; /* Adjust padding as needed */
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                font-size: 12px; /* Adjust font size for smaller screens */
+                text-align: center;
+                flex-direction: column; /* Stack items vertically on small screens */
+            }
+
+            .footer > div {
+                margin-bottom: 10px; /* Add space between stacked items */
+            }
+        }
+
+        /* Styles for other elements */
+        .sheet-outer {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px); /* Ensure container height minus footer space */
+        }
+
+        .sheet {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sheet > div {
+            margin: 0 10px;
+        }
+
+        .sheet > div img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        
+        .section-content {
+            flex: 1;
+            margin-bottom: 100px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="sheet-outer A4">
+            <section class="sheet">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; border-bottom: 1px solid black;">
+                    <div style="flex: 1; padding: 15px; margin: 0 10px;">
+                        <img height="100px" width="100px" src="https://i.imgur.com/TIf2jC5.png" alt="Logo" style="max-width: 100%; height: auto;" />
+                        <div style="margin-top: 28px;">
+                            <p>Hotel Management</p>
+                            <p>info.hotle@gmail.com</p>
+                            <p>0700527177</p>
+                        </div>
+                    </div>
+                    <div style="flex: 2; padding: 15px;">
+                        <h1 style="padding: 8px 30px; margin: 30px; display: flex; justify-content: center; font-weight: 500; font-size: 2rem;">
+                            Reservation Received
+                        </h1>
+                        <div style="margin-top: 28px; text-align: end;">
+                           
+                         
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; border-bottom: 1px solid black; padding: 20px 10px;">
+                    <div style="flex: 1; padding: 10px;">
+                        <div style="line-height: 1.2rem; font-weight: 600;">
+                            <p>Customer Name</p>
+                            <p>Client Email</p>
+                            <p>Reservation Date</p>
+                            <p>Reservation Time</p>
+                            
+                        </div>
+                    </div>
+                    <div style="flex: 1; text-align: end; padding: 10px;">
+                        <div style="line-height: 1.2rem;">
+                            <p>{{CustomerFullLegalName}}</p>
+                            <p>{{ClientEmail}}</p>
+                            <p>{{Reservation Date}}</p>
+                            <p>{{Reservation Time}}</p>
+                            
+                            
+                        </div>
+                    </div>
+                    <div style="flex: 1; text-align: end; padding: 10px;">
+                        <div style="line-height: 1.2rem;">
+                            <p>{{Date}}</p>
+                           
+                           
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; padding: 10px;">
+                    <div style="flex: 1; padding: 10px;">
+                        <p style="font-weight: 600;">Description</p>
+                        <p>Your Order will be ready on time.Give us Pleasure by coming on time </p>
+                    </div>
+                    <div style="flex: 1; display: flex; padding: 10px; border-bottom: 1px solid black;">
+                        <div style="flex: 1; display: flex; gap: 2rem;">
+                            <div style="line-height: 1.2rem; font-weight: 600;">
+                                <p>Number of Persons :</p>
+                                <p>Foods Details     :</p>
+                            </div>
+                            <div>
+                                <p>{{Number of persons}}</p>
+                                <p>{{Food Details}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 5rem; padding: 10px;">
+                    <div style="line-height: 1.2rem; font-weight: 600;">
+                        <p>Total Price   :</p>
+                        <p>Payment Status:</p>
+                        
+                    </div>
+                    <div>
+                        <p>{{Price}} Rs</p>
+                        <p>Pending</p>
+                        
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="footer">
+        <!-- <div>
+            <p style="margin: 0; padding: 0; line-height: 1.2;">FusionIQX Group</p>
+            <p style="margin: 0; padding: 0;">Zakriasdalsvägen 26B</p>
+            <p style="margin: 0; padding: 0;">653 42 Karlstad</p>
+            <p style="margin: 0; padding: 0;">Org.nr 000506-8614, VAT-nr SE000506861401</p>
+            <p style="margin: 0; padding: 0;">Approved for F-tax</p>
+        </div>
+        <div>
+            <!-- <p style="margin: 0; white-space: nowrap;">{{ClientCompanyName}}</p> -->
+            <p style="margin: 0; white-space: nowrap;">taxia chock, Rana Hotel</p>
+            <p style="margin: 0; white-space: nowrap;">info.hotel@gmail.com</p>
+        </div>
+        <div style="text-align: end;">
+            <p style="margin: 0; padding: 0;">Scan in bank app</p>
+            <img width="100" style="margin-top: 10px;" src="https://i.imgur.com/KrFSeDE.jpeg" alt="QR Code" />
+        </div> 
+    </div>
+</body>
+</html>

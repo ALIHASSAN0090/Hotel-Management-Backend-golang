@@ -1,0 +1,16 @@
+{
+  "name": "pdf-to-html",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pdf-to-html": "file:",
+    "puppeteer": "^23.2.1"
+  },
+  "description": ""
+}
