@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"golang-hotel-management/database"
 	"golang-hotel-management/models"
-	"golang-hotel-management/pdf"
+	pdf "golang-hotel-management/pdf/generate-pdf"
 	"log"
 	"net/http"
 	"strconv"
@@ -84,10 +84,12 @@ func CreateOrder() gin.HandlerFunc {
 				return
 			}
 
-			if err := PrepareAndSendReservationEmail(c, createOrder); err != nil {
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
-				return
-			}
+			go func() {
+				if err := PrepareAndSendReservationEmail(c, createOrder); err != nil {
+					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+					return
+				}
+			}()
 
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order, invoice, and Reservation Created and Fetched Successfully",
@@ -99,10 +101,12 @@ func CreateOrder() gin.HandlerFunc {
 				},
 			})
 		} else {
-			if err := PrepareAndSendOrderEmail(c, createOrder); err != nil {
-				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
-				return
-			}
+			go func() {
+				if err := PrepareAndSendOrderEmail(c, createOrder); err != nil {
+					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+					return
+				}
+			}()
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order and Invoice Created and Fetched Successfully",
 				Status:  200,
@@ -185,7 +189,7 @@ func PrepareAndSendOrderEmail(c *gin.Context, order models.CombinedOrderReservat
 
 	totalPrice, _ := database.GetTotalPrice(order.CreateOrder.FoodItems_IDs)
 	totalFoods, _ := database.GetOrderFoodsDB(order.CreateOrder.FoodItems_IDs)
-	err := pdf.GenerateAndSendOrderPDF("pdf/order.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, orderDate, orderTime, 0, totalPrice, totalFoods)
+	err := pdf.GenerateAndSendOrderPDF("pdf/files/order.html", "pdf/files/invoice2.pdf", customerNameStr, customerEmailStr, orderDate, orderTime, 0, totalPrice, totalFoods)
 	if err != nil {
 		fmt.Println("Error generating and sending PDF:", err)
 		return err
