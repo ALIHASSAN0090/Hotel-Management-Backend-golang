@@ -1,11 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"golang-hotel-management/database"
 	"golang-hotel-management/models"
-	"golang-hotel-management/pdf"
+	pdf "golang-hotel-management/pdf/generate-pdf"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,10 +84,15 @@ func CreateOrder() gin.HandlerFunc {
 				return
 			}
 
-			err = pdf.GenerateAndSendPDF("pdf/reservation.html", "pdf/invoice2.pdf")
+			go func() {
+				if err := PrepareAndSendReservationEmail(c, createOrder); err != nil {
+					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+					return
+				}
+			}()
 
 			c.JSON(http.StatusOK, models.Response{
-				Message: "Order , invoice and Reservation Created and Fetched Successfully",
+				Message: "Order, invoice, and Reservation Created and Fetched Successfully",
 				Status:  200,
 				Data: gin.H{
 					"order":       Data,
@@ -93,18 +101,53 @@ func CreateOrder() gin.HandlerFunc {
 				},
 			})
 		} else {
+			go func() {
+				if err := PrepareAndSendOrderEmail(c, createOrder); err != nil {
+					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+					return
+				}
+			}()
 			c.JSON(http.StatusOK, models.Response{
 				Message: "Order and Invoice Created and Fetched Successfully",
 				Status:  200,
 				Data: gin.H{
-					"order": Data,
-
+					"order":   Data,
 					"Invoice": InvoiceData,
 				},
 			})
-
 		}
 	}
+}
+
+func PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedOrderReservation) error {
+	customerName, existsName := c.Get("username")
+	customerEmail, existsEmail := c.Get("email")
+	if !existsName || !existsEmail {
+		log.Printf("Missing customer information: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email not found in header")
+	}
+
+	customerNameStr, okName := customerName.(string)
+	customerEmailStr, okEmail := customerEmail.(string)
+	if !okName || !okEmail {
+		log.Printf("Customer information is not of type string: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email is not of type string")
+	}
+
+	resDate := createOrder.MakeReservation.DineInDate.Format("2006-01-02")
+	resTime := createOrder.MakeReservation.DineInTime.Format("15:04:05")
+	numberOfPersons := createOrder.MakeReservation.NumberOfPersons
+	foods := createOrder.CreateOrder.FoodItems_IDs
+
+	totalPrice, _ := database.GetTotalPrice(foods)
+	totalFoods, _ := database.GetOrderFoodsDB(foods)
+	err := pdf.GenerateAndSendReservationPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice, totalFoods)
+	if err != nil {
+		fmt.Println("Error generating and sending PDF:", err)
+		return err
+	}
+
+	return nil
 }
 
 func UpdateOrder() gin.HandlerFunc {
@@ -124,4 +167,33 @@ func UpdateOrder() gin.HandlerFunc {
 		})
 
 	}
+}
+
+func PrepareAndSendOrderEmail(c *gin.Context, order models.CombinedOrderReservation) error {
+	customerName, existsName := c.Get("username")
+	customerEmail, existsEmail := c.Get("email")
+	if !existsName || !existsEmail {
+		log.Printf("Missing customer information: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email not found in header")
+	}
+
+	customerNameStr, okName := customerName.(string)
+	customerEmailStr, okEmail := customerEmail.(string)
+	if !okName || !okEmail {
+		log.Printf("Customer information is not of type string: Name: %v, Email: %v", customerName, customerEmail)
+		return fmt.Errorf("customer name or email is not of type string")
+	}
+
+	orderDate := time.Now().Format("2006-01-02")
+	orderTime := time.Now().Format("15:04:05")
+
+	totalPrice, _ := database.GetTotalPrice(order.CreateOrder.FoodItems_IDs)
+	totalFoods, _ := database.GetOrderFoodsDB(order.CreateOrder.FoodItems_IDs)
+	err := pdf.GenerateAndSendOrderPDF("pdf/files/order.html", "pdf/files/invoice2.pdf", customerNameStr, customerEmailStr, orderDate, orderTime, 0, totalPrice, totalFoods)
+	if err != nil {
+		fmt.Println("Error generating and sending PDF:", err)
+		return err
+	}
+
+	return nil
 }
