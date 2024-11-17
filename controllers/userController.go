@@ -14,6 +14,17 @@ import (
 func GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		data, err := database.GetUsersDB(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, models.Response{
+			Message: "User Fetched",
+			Status:  200,
+			Data:    data,
+		})
 	}
 }
 
@@ -100,7 +111,6 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
-		// Debugging: Log the created user data
 		log.Printf("Created user data: %+v", createdUser)
 
 		c.JSON(http.StatusOK, models.Response{

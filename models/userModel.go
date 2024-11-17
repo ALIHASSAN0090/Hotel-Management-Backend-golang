@@ -30,3 +30,12 @@ type Login struct {
 	Email        string `json:"email" db:"email"`
 	PasswordHash string `json:"password_hash" db:"password_hash"`
 }
+
+type AllUsers struct {
+	ID                                           int64     `json:"id" db:"id"`
+	Username                                     string    `json:"username" db:"username"`
+	Email                                        string    `json:"email" db:"email"`
+	CreatedAt                                    time.Time `json:"created_at" db:"created_at"`
+	Total_price_spent_on_orders_and_reservations float64      `json:"total_price_spent_on_orders_and_reservations" db:"total_price_spent_on_orders_and_reservations"`
+	NumberOfOrders                               int       `json:"number_of_orders" db:"number_of_orders"`
+}
