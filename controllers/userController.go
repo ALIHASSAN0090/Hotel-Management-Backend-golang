@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"golang-hotel-management/database"
 	"golang-hotel-management/middleware"
 	"golang-hotel-management/models"
+	repo "golang-hotel-management/repositries/controllers_repo"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,10 +12,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetUsers() gin.HandlerFunc {
-	return func(c *gin.Context) {
+type UserController struct {
+	repo repo.UserRepository
+}
 
-		data, err := database.GetUsersDB(c)
+func NewUserController(repo repo.UserRepository) *UserController {
+	return &UserController{repo: repo}
+}
+
+func (uc *UserController) GetUsers() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		data, err := uc.repo.GetUsersDB(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
@@ -29,14 +36,14 @@ func GetUsers() gin.HandlerFunc {
 	}
 }
 
-func GetUser() gin.HandlerFunc {
+func (uc *UserController) GetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
-		UserData, err := database.GetUserDB(c, userId)
+		UserData, err := uc.repo.GetUserDB(c, userId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
@@ -49,9 +56,8 @@ func GetUser() gin.HandlerFunc {
 	}
 }
 
-func Login() gin.HandlerFunc {
+func (uc *UserController) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var User models.Login
 		log.Printf("User struct initialized: %+v", User)
 
@@ -62,7 +68,7 @@ func Login() gin.HandlerFunc {
 
 		log.Printf("Received login data: %+v", User)
 
-		storedUser, err := database.GetUserByEmailDB(c, User.Email)
+		storedUser, err := uc.repo.GetUserByEmailDB(c, User.Email)
 		if err != nil {
 			c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Email not found"})
 			return
@@ -75,12 +81,12 @@ func Login() gin.HandlerFunc {
 
 		token, err := middleware.GenerateToken(uint(storedUser.ID), storedUser.Email, storedUser.Username, storedUser.Role)
 		if err != nil {
-			log.Printf("Error generating token: %v", err) // Log the error
+			log.Printf("Error generating token: %v", err)
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Token generation failed"})
 			return
 		}
 
-		log.Printf("Token generated successfully for user ID: %d", storedUser.ID) // Log successful token generation
+		log.Printf("Token generated successfully for user ID: %d", storedUser.ID)
 
 		c.JSON(http.StatusOK, models.Response{
 			Message: "Login Successful",
@@ -90,9 +96,8 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-func Signup() gin.HandlerFunc {
+func (uc *UserController) Signup() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var User models.User
 		log.Printf("User struct initialized: %+v", User)
 
@@ -107,7 +112,7 @@ func Signup() gin.HandlerFunc {
 			getHash, err := HashPassword(User.PasswordHash)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Password hashing failed"})
-				c.Error(err) // Log the error
+				c.Error(err)
 				return
 			}
 
@@ -119,10 +124,10 @@ func Signup() gin.HandlerFunc {
 
 		log.Printf("Hashed password: %s", User.PasswordHash)
 
-		createdUser, err := database.CreateUser(c, User)
+		createdUser, err := uc.repo.CreateUser(c, User)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "User creation failed"})
-			c.Error(err) // Log the error
+			c.Error(err)
 			return
 		}
 
@@ -156,7 +161,7 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	return true, "Password matched"
 }
 
-func CheckHeader() gin.HandlerFunc {
+func (uc *UserController) CheckHeader() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, _ := c.Get("userID")
 		email, _ := c.Get("email")
