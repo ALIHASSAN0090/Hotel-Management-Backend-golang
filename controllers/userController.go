@@ -6,6 +6,7 @@ import (
 	"golang-hotel-management/models"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -21,7 +22,7 @@ func GetUsers() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, models.Response{
-			Message: "User Fetched",
+			Message: "Users Fetched",
 			Status:  200,
 			Data:    data,
 		})
@@ -30,7 +31,21 @@ func GetUsers() gin.HandlerFunc {
 
 func GetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
+		}
+		UserData, err := database.GetUserDB(c, userId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, models.Response{
+			Message: "User Fetched",
+			Status:  200,
+			Data:    UserData,
+		})
 	}
 }
 
