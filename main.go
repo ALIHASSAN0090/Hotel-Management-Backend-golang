@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,6 +24,8 @@ func init() {
 func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
+
+	router.Use(cors.New(middleware.GetCORSConfig()))
 	routes.UserRoutes(router)
 	router.Use(middleware.AuthMiddleware())
 	routes.FoodRoutes(router)

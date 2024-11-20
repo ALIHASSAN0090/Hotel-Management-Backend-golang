@@ -23,23 +23,19 @@ func Connect() (*sql.DB, error) {
 		return nil, fmt.Errorf("error loading .env file: %w", err)
 	}
 
-	// Retrieve database connection details from environment variables
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbName := os.Getenv("DB_NAME")
 	dbPassword := os.Getenv("DB_PASSWORD")
 
-	// Check for missing environment variables
 	if dbHost == "" || dbPort == "" || dbUser == "" || dbName == "" || dbPassword == "" {
 		return nil, fmt.Errorf("missing one or more required environment variables")
 	}
 
-	// Build the connection string
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPassword, dbName)
 
-	// Attempt to establish a connection with retry logic
 	for i := 0; i < 3; i++ {
 		DbConn, err = sql.Open("postgres", psqlInfo)
 		if err != nil {
@@ -48,7 +44,6 @@ func Connect() (*sql.DB, error) {
 			continue
 		}
 
-		// Check if the connection is valid
 		err = DbConn.Ping()
 		if err == nil {
 			log.Println("Successfully connected to the database")
