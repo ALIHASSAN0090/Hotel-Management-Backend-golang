@@ -10,5 +10,3 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) DEFAULT 'customer'
 );
 
-INSERT INTO users (username, email, password_hash, first_name, last_name, role)
-VALUES ('admin', 'alihassankhan285@gmail.com', '$2a$12$BG4eccDYQWqii3gbW/KP9evZ/3XrUUko7OfdKb73ia.AWAVJp7.LS', 'Admin', 'User', 'admin');

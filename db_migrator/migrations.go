@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func RunMigrations() error {
@@ -20,9 +21,6 @@ func RunMigrations() error {
 		return fmt.Errorf("could not connect to the database: %w", err)
 	}
 	defer db.Close()
-	if err := createDefaultAdminUser(); err != nil {
-		return err
-	}
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
@@ -45,6 +43,11 @@ func RunMigrations() error {
 	}
 
 	log.Println("Migrations applied successfully!")
+
+	if err := createDefaultAdminUser(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
