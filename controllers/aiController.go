@@ -13,23 +13,34 @@ func AiQuery() gin.HandlerFunc {
 
 		userid, exist := c.Get("userID")
 		if !exist {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting question"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting user id"})
+			return
 		}
+
+		userIDInt, ok := userid.(int)
+		if !ok {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "User ID is not an integer"})
+			return
+		}
+
 		question := c.Param("question")
 
-		order_details, err := database.GetOrderByUserIdDB(userid, c)
+		order_details, err := database.GetOrderByUserIdDB(userIDInt, c)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting question"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting order details"})
+			return
 		}
 
 		hotel_details, err := database.GetHotelDetailsDB(c)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting question"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting hotel details"})
+			return
 		}
 
 		responce, err := database.GetAiResponceDB(order_details, hotel_details, question)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting question"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting AI response"})
+			return
 		}
 
 		c.JSON(http.StatusOK, models.Response{

@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"golang-hotel-management/models"
 	"net/http"
 
@@ -59,4 +60,57 @@ GROUP BY
 	}
 
 	return &order, nil
+}
+
+func GetOrderByUserIdDB(userid int, c *gin.Context) (string, error) {
+
+	query := `
+    SELECT 
+        o.id AS order_id, 
+        o.total_price, 
+        i.payment_status, 
+        i.payment_method,
+        r.dine_in_time,
+        r.number_of_persons
+    FROM 
+        orders AS o
+    JOIN 
+        invoices AS i ON o.id = i.order_id
+    JOIN 
+        reservations AS r ON r.order_id = o.id
+    WHERE 
+        o.user_id = ?;  
+	`
+
+	rows, err := DbConn.Query(query, userid)
+	if err != nil {
+		return "", fmt.Errorf("error executing query: %v", err)
+	}
+	defer rows.Close()
+
+	var result string
+
+	for rows.Next() {
+		var orderID, numberOfPersons int
+		var totalPrice float64
+		var paymentStatus, paymentMethod, dineInTime string
+
+		err := rows.Scan(&orderID, &totalPrice, &paymentStatus, &paymentMethod, &dineInTime, &numberOfPersons)
+		if err != nil {
+			return "", fmt.Errorf("error scanning row: %v", err)
+		}
+
+		result += fmt.Sprintf("Order ID: %d\nTotal Price: %.2f\nPayment Status: %s\nPayment Method: %s\nDine-in Time: %s\nNumber of Persons: %d\n\n",
+			orderID, totalPrice, paymentStatus, paymentMethod, dineInTime, numberOfPersons)
+	}
+
+	if err := rows.Err(); err != nil {
+		return "", fmt.Errorf("error during row iteration: %v", err)
+	}
+
+	if result == "" {
+		return "No orders found for the user.", nil
+	}
+
+	return result, nil
 }

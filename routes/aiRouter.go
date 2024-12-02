@@ -1,6 +1,11 @@
 package routes
 
+import (
+	"golang-hotel-management/controllers"
 
-func AIRoutes(incomingRoutes *gin.Engine){
-	incomingRoutes.GET("/chat/query" , controllers.AiQuery())
+	"github.com/gin-gonic/gin"
+)
+
+func AIRoutes(incomingRoutes *gin.Engine) {
+	incomingRoutes.POST("/chat/query", controllers.AiQuery())
 }
