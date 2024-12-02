@@ -62,7 +62,7 @@ GROUP BY
 	return &order, nil
 }
 
-func GetOrderByUserIdDB(userid int, c *gin.Context) (string, error) {
+func GetOrderByUserIdDB(userid any, c *gin.Context) (string, error) {
 
 	query := `
     SELECT 
@@ -79,7 +79,7 @@ func GetOrderByUserIdDB(userid int, c *gin.Context) (string, error) {
     JOIN 
         reservations AS r ON r.order_id = o.id
     WHERE 
-        o.user_id = ?;  
+        o.user_id = $1;  
 	`
 
 	rows, err := DbConn.Query(query, userid)

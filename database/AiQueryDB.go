@@ -7,16 +7,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/gin-gonic/gin"
 )
 
-func AiQueryDB(query string, userID int, c *gin.Context) (string, error) {
-	// Implement this function as needed
-	return "", nil
-}
-
 func GetAiResponceDB(order_details, hotel_details, question string) (string, error) {
+	fmt.Println(question)
 	apiKey := os.Getenv("OPENAI_KEY")
 	if apiKey == "" {
 		return "", fmt.Errorf("OPENAI_KEY environment variable not set")
@@ -26,7 +20,7 @@ func GetAiResponceDB(order_details, hotel_details, question string) (string, err
 		"model": "gpt-4o",
 		"messages": []map[string]string{
 			{"role": "system", "content": "Behave as a food hotel chat assistant."},
-			{"role": "user", "content": fmt.Sprintf("You are a hotel's online chat assistent you have hotel data : $1  . and orders data of the current user : $2 . And Question of User is : $3 . Properly give responce as online chat assistant. Only provide responce on basis of provided data.", order_details, hotel_details, question)},
+			{"role": "user", "content": fmt.Sprintf("You are a hotel's online chat assistant. You have hotel data: %v. Orders data of the current user: %v. The user's question is: %v. Provide a response as an online chat assistant, based only on the provided data. give consice responce", hotel_details, order_details, question)},
 		},
 	}
 

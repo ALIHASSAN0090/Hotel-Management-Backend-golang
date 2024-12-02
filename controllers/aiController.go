@@ -10,22 +10,14 @@ import (
 
 func AiQuery() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		question := c.Query("question")
 		userid, exist := c.Get("userID")
 		if !exist {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting user id"})
 			return
 		}
 
-		userIDInt, ok := userid.(int)
-		if !ok {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "User ID is not an integer"})
-			return
-		}
-
-		question := c.Param("question")
-
-		order_details, err := database.GetOrderByUserIdDB(userIDInt, c)
+		order_details, err := database.GetOrderByUserIdDB(userid, c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting order details"})
 			return

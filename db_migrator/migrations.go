@@ -54,7 +54,6 @@ func RunMigrations() error {
 func createDefaultAdminUser() error {
 	adminEmail := os.Getenv("ADMIN_DEFAULT_EMAIL")
 	adminPassword := os.Getenv("ADMIN_DEFAULT_PASSWORD")
-	adminRole := os.Getenv("ADMIN_ROLE")
 
 	adminPasswordHash, err := controllers.HashPassword(adminPassword)
 	for {
@@ -68,7 +67,7 @@ func createDefaultAdminUser() error {
 			break
 		}
 	}
-	if adminEmail == "" || adminPasswordHash == "" || adminRole == "" {
+	if adminEmail == "" || adminPasswordHash == "" {
 		return fmt.Errorf("environment variables ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_ROLE must be set")
 	}
 
@@ -78,6 +77,7 @@ func createDefaultAdminUser() error {
 		PasswordHash: adminPasswordHash,
 		FirstName:    "Admin",
 		LastName:     "User",
+		Role:         "admin",
 	}
 
 	c, _ := gin.CreateTestContext(nil)
