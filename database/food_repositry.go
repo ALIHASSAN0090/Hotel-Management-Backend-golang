@@ -74,8 +74,7 @@ func (r *foodRepository) CreateFoodDB(food models.CreateFood) error {
 	return nil
 }
 
-// UpdateFoodDB updates an existing food item in the database
-func (r *foodRepository) UpdateFoodDB(food models.UpdateFood, c *gin.Context) error {
+func (r *foodRepository) UpdateFoodDB(c *gin.Context, food models.UpdateFood) error {
 	query := `UPDATE food_items
 	SET name = $2, price = $3, menu_id = $4, updated_at = CURRENT_TIMESTAMP
 	WHERE id = $1`
