@@ -32,6 +32,7 @@ func main() {
 	routes.MenuRoutes(router)
 	routes.OrderRoutes(router)
 	routes.InvoiceRoutes(router)
+	routes.AIRoutes(router)
 
 	db, err := database.Connect()
 	if err != nil {
