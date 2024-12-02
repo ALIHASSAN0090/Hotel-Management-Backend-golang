@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"golang-hotel-management/models"
 
 	"github.com/gin-gonic/gin"
@@ -19,10 +20,26 @@ func GetAllInvoicesDB(c *gin.Context) ([]models.Invoice, error) {
 	var invoices []models.Invoice
 	for rows.Next() {
 		var invoice models.Invoice
-		if err := rows.Scan(&invoice.ID, &invoice.OrderID, &invoice.PaymentMethod, &invoice.PaymentStatus, &invoice.CreatedAt, &invoice.UpdatedAt); err != nil {
+		var createdAt sql.NullTime
+		var updatedAt sql.NullTime
+
+		if err := rows.Scan(&invoice.ID, &invoice.OrderID, &invoice.PaymentMethod, &invoice.PaymentStatus, &createdAt, &updatedAt); err != nil {
 			return nil, err
 		}
+
+		if createdAt.Valid {
+			invoice.CreatedAt = createdAt.Time
+		}
+
+		if updatedAt.Valid {
+			invoice.UpdatedAt = updatedAt.Time
+		}
+
 		invoices = append(invoices, invoice)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return invoices, nil

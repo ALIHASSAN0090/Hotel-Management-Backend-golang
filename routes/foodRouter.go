@@ -7,7 +7,7 @@ import (
 )
 
 func FoodRoutes(incomingRoutes *gin.Engine) {
-	incomingRoutes.GET("/foods", controllers.GetAllFoods())
+	incomingRoutes.GET("/foods/:menu_id", controllers.GetAllFoods())
 	incomingRoutes.GET("/foods/food_id", controllers.GetFood())
 	incomingRoutes.POST("/foods", controllers.CreateFood())
 	incomingRoutes.PATCH("/food/update", controllers.UpdateFood())

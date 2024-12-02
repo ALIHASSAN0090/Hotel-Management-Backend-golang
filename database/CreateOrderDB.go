@@ -39,13 +39,11 @@ func CreateOrderDB(c *gin.Context, createOrder models.CombinedOrderReservation) 
 			return 0, 0, fmt.Errorf("invalid dine-in date and time")
 		}
 
-		formattedDineInTime := dineInDateTime.Format("2006-01-02 15:04:05")
-
-		query3 := `INSERT INTO reservations(order_id, number_of_persons, dine_in_time, formatted_dine_in_time, created_at) 
-        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING id`
+		query3 := `INSERT INTO reservations(order_id, number_of_persons, dine_in_time,  created_at) 
+        VALUES ($1, $2, $3 , CURRENT_TIMESTAMP) RETURNING id`
 
 		var resID int64
-		err = DbConn.QueryRow(query3, ID, createOrder.MakeReservation.NumberOfPersons, dineInDateTime, formattedDineInTime).Scan(&resID)
+		err = DbConn.QueryRow(query3, ID, createOrder.MakeReservation.NumberOfPersons, dineInDateTime).Scan(&resID)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -94,9 +92,9 @@ func CalculateDineInDateTime(dineInDate, dineInTime time.Time) time.Time {
 func GetReservationDB(c *gin.Context, resId int64) (models.Reservation, error) {
 
 	var reservation models.Reservation
-	query := `SELECT order_id, number_of_persons, dine_in_time, created_at, formatted_dine_in_time 
+	query := `SELECT order_id, number_of_persons, dine_in_time, created_at
 	FROM reservations WHERE id = $1`
-	err := DbConn.QueryRow(query, resId).Scan(&reservation.OrderID, &reservation.NumberOfPersons, &reservation.DineInTime, &reservation.CreatedAt, &reservation.FormattedDineInTime)
+	err := DbConn.QueryRow(query, resId).Scan(&reservation.OrderID, &reservation.NumberOfPersons, &reservation.DineInTime, &reservation.CreatedAt)
 	if err != nil {
 		return models.Reservation{}, err
 	}

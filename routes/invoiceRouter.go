@@ -9,6 +9,5 @@ import (
 func InvoiceRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.GET("/invoices/all", controllers.GetAllInvoices())
 	incomingRoutes.GET("/invoices/:order_id", controllers.GetInvoice())
-	incomingRoutes.POST("/invoices/create", controllers.CreateInvoice())
 	incomingRoutes.PATCH("/invoice/update", controllers.UpdateInvoice())
 }

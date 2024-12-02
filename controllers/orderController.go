@@ -141,7 +141,7 @@ func PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedO
 
 	totalPrice, _ := database.GetTotalPrice(foods)
 	totalFoods, _ := database.GetOrderFoodsDB(foods)
-	err := pdf.GenerateAndSendReservationPDF("pdf/reservation.html", "pdf/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice, totalFoods)
+	err := pdf.GenerateAndSendReservationPDF("pdf/files/reservation.html", "pdf/files/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice, totalFoods)
 	if err != nil {
 		fmt.Println("Error generating and sending PDF:", err)
 		return err

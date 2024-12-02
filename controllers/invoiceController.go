@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"golang-hotel-management/database"
 	"golang-hotel-management/models"
 	"net/http"
@@ -30,7 +29,7 @@ func GetInvoice() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order_id format"})
 			return
 		}
-		fmt.Println(order_id)
+
 		data, err := database.GetInvoiceDB(order_id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -38,27 +37,6 @@ func GetInvoice() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, data)
-	}
-}
-
-func CreateInvoice() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		// var invoice models.Invoice
-
-		// err := c.ShouldBindJSON(&invoice)
-		// if err != nil {
-		// 	c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
-		// }
-
-		// invoiceres, err := database.CreateInvoiceDB(invoice)
-		// if err != nil {
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		// 	return
-		// }
-
-		// c.JSON(http.StatusOK, invoiceres)
-
 	}
 }
 

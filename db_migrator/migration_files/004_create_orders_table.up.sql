@@ -5,5 +5,4 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    status VARCHAR(255) DEFAULT 'unpaid' CHECK (status IN ('unpaid', 'paid'))
 );
