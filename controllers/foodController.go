@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"golang-hotel-management/database"
+	controller_repo "golang-hotel-management/controllers/controllers_repo"
+	"golang-hotel-management/database/database_repo"
 	"golang-hotel-management/models"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,118 +11,118 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllFoods() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		menu_id, _ := strconv.ParseInt(c.Param("menu_id"), 10, 64)
+type FoodController struct {
+	Repo database_repo.FoodRepository
+}
 
-		allfoods, err := database.GetAllFoodsDB(c, menu_id)
+func NewFoodController(repo database_repo.FoodRepository) controller_repo.FoodController {
+	return &FoodController{Repo: repo}
+}
+
+func (fc *FoodController) GetAllFoods() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		menuID, err := strconv.ParseInt(c.Param("menu_id"), 10, 64)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting all foods from database"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid menu ID"})
+			return
+		}
+
+		allFoods, err := fc.Repo.GetAllFoodsDB(menuID, c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error fetching foods from the database"})
+			return
 		}
 
 		c.JSON(http.StatusOK, models.Response{
 			Message: "Fetched Food Data",
 			Status:  http.StatusOK,
-			Data:    allfoods,
+			Data:    allFoods,
 		})
 	}
 }
-func GetFood() gin.HandlerFunc {
+
+func (fc *FoodController) GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		id := c.Query("food_id")
-		log.Printf("Received request for food with ID: %s", id)
-
 		if id == "" {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Food ID is required"})
 			return
 		}
 
-		idint, err := strconv.Atoi(id)
+		foodID, err := strconv.Atoi(id)
 		if err != nil {
-			log.Printf("Error converting food_id to integer: %v", err)
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Food ID"})
 			return
 		}
-		var idint64 int64 = int64(idint)
 
-		data, err := database.GetFoodByFoodIdDB(idint64, c)
+		foodData, err := fc.Repo.GetFoodByFoodIdDB(int64(foodID), c)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting data from db"})
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error fetching food data"})
 			return
 		}
 
-		// Return the food data
 		c.JSON(http.StatusOK, models.Response{
 			Message: "Fetched Food Data",
 			Status:  http.StatusOK,
-			Data:    data,
+			Data:    foodData,
 		})
 	}
 }
 
-func CreateFood() gin.HandlerFunc {
+func (fc *FoodController) CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var inputfood models.CreateFood
+		var inputFood models.CreateFood
 
-		if err := c.ShouldBindJSON(&inputfood); err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid Input"})
+		if err := c.ShouldBindJSON(&inputFood); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 			return
 		}
 
-		inputfood.CreatedAt = time.Now()
+		inputFood.CreatedAt = time.Now()
 
-		if err := database.CreateFoodDB(inputfood); err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error in creating food item in database"})
+		if err := fc.Repo.CreateFoodDB(inputFood); err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error creating food item"})
 			return
 		}
 
 		c.JSON(http.StatusOK, models.Response{
 			Message: "Food item created successfully",
 			Status:  http.StatusOK,
-			Data:    inputfood,
+			Data:    inputFood,
 		})
 	}
 }
 
-func UpdateFood() gin.HandlerFunc {
+func (fc *FoodController) UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var fooddata models.UpdateFood
+		var foodData models.UpdateFood
 
-		if err := c.ShouldBindJSON(&fooddata); err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input data"})
+		if err := c.ShouldBindJSON(&foodData); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid input"})
 			return
 		}
 
-		if fooddata.Name == "" {
+		if foodData.Name == "" {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Name field is required"})
 			return
 		}
-		if fooddata.Price <= 0 {
+		if foodData.Price <= 0 {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Price must be a positive number"})
 			return
 		}
-		if fooddata.MenuID <= 0 {
+		if foodData.MenuID <= 0 {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "MenuID must be valid"})
 			return
 		}
 
-		if err := database.UpdateFoodDB(c, fooddata); err != nil {
-			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error updating food item in the database"})
+		if err := fc.Repo.UpdateFoodDB(c, foodData); err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Error updating food item"})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Food item updated successfully",
-			"data":    fooddata,
+			"data":    foodData,
 		})
 	}
 }
-
-// func Round(num float64) int {
-
-// }
-
-// func Fixed(num float64, preceision int) float64 {
-
-// }
