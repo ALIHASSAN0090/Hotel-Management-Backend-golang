@@ -63,23 +63,22 @@ func (m *Migration) RunMigrations() error {
 
 	return nil
 }
-
 func (m *Migration) createDefaultAdminUser() error {
+	// if m.UserController == nil {
+	// 	return fmt.Errorf("UserController is not initialized")
+	// }
+	// if m.UserRepository == nil {
+	// 	return fmt.Errorf("UserRepository is not initialized")
+	// }
+
 	adminEmail := os.Getenv("ADMIN_DEFAULT_EMAIL")
 	adminPassword := os.Getenv("ADMIN_DEFAULT_PASSWORD")
 
 	adminPasswordHash, err := m.UserController.HashPassword(adminPassword)
-	for {
-		if err != nil {
-
-			return err
-		}
-
-		if match, _ := m.UserController.VerifyPassword(adminPasswordHash, adminPassword); match {
-			adminPassword = adminPasswordHash
-			break
-		}
+	if err != nil {
+		return err
 	}
+
 	if adminEmail == "" || adminPasswordHash == "" {
 		return fmt.Errorf("environment variables ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_ROLE must be set")
 	}

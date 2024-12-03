@@ -8,9 +8,8 @@ import (
 )
 
 func OrderRoutes(incomingRoutes *gin.Engine) {
-	orderRepo := database.NewOrderRepository()
-	invoiceRepo := database.NewInvoiceRepository()
-	orderController := controllers.NewOrderController(orderRepo, invoiceRepo)
+	orderController := controllers.NewOrderController(database.NewOrderRepository(), database.NewInvoiceRepository())
+
 	incomingRoutes.GET("/orders", orderController.GetOrders())
 	incomingRoutes.GET("/orders/:order_id", orderController.GetOrder())
 	incomingRoutes.POST("/orders", orderController.CreateOrder())
