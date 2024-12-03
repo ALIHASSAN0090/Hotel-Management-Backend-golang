@@ -17,7 +17,7 @@ func AiQuery() gin.HandlerFunc {
 			return
 		}
 
-		order_details, err := database.GetOrderByUserIdDB(userid, c)
+		order_details, err := oc.Repo.GetOrderByUserIdDB(userid, c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in getting order details"})
 			return

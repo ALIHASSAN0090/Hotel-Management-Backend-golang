@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"golang-hotel-management/database"
+	"golang-hotel-management/database/database_repo"
 	"golang-hotel-management/models"
 	pdf "golang-hotel-management/pdf/generate-pdf"
 	"log"
@@ -13,10 +13,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetOrders() gin.HandlerFunc {
+type OrderController struct {
+	Repo database_repo.OrderRepository
+	IC   database_repo.InvoiceRepository
+}
+
+func NewOrderController(repo database_repo.OrderRepository, ic database_repo.InvoiceRepository) OrderController {
+	return OrderController{
+		Repo: repo,
+		IC:   ic,
+	}
+}
+
+func (oc *OrderController) GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		data, err := database.GetAllOrdersDB(c)
+		data, err := oc.Repo.GetAllOrdersDB(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 		}
@@ -29,14 +41,14 @@ func GetOrders() gin.HandlerFunc {
 	}
 }
 
-func GetOrder() gin.HandlerFunc {
+func (oc *OrderController) GetOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		order_id, err := strconv.ParseInt(c.Param("order_id"), 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
-		data, err := database.GetOrderDB(c, order_id)
+		data, err := oc.Repo.GetOrderDB(c, order_id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
@@ -50,7 +62,7 @@ func GetOrder() gin.HandlerFunc {
 	}
 }
 
-func CreateOrder() gin.HandlerFunc {
+func (oc *OrderController) CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var createOrder models.CombinedOrderReservation
@@ -59,33 +71,33 @@ func CreateOrder() gin.HandlerFunc {
 			return
 		}
 
-		OrderId, reservationId, err := database.CreateOrderDB(c, createOrder)
+		OrderId, reservationId, err := oc.Repo.CreateOrderDB(c, createOrder)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
 
-		InvoiceData, err := database.CreateInvoiceDB(OrderId)
+		InvoiceData, err := oc.IC.CreateInvoiceDB(OrderId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
 
-		Data, err := database.GetOrderDB(c, OrderId)
+		Data, err := oc.Repo.GetOrderDB(c, OrderId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
 
 		if reservationId != 0 {
-			Reservation, err := database.GetReservationDB(c, reservationId)
+			Reservation, err := oc.Repo.GetReservationDB(c, reservationId)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 				return
 			}
 
 			go func() {
-				if err := PrepareAndSendReservationEmail(c, createOrder); err != nil {
+				if err := oc.PrepareAndSendReservationEmail(c, createOrder); err != nil {
 					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 					return
 				}
@@ -102,7 +114,7 @@ func CreateOrder() gin.HandlerFunc {
 			})
 		} else {
 			go func() {
-				if err := PrepareAndSendOrderEmail(c, createOrder); err != nil {
+				if err := oc.PrepareAndSendOrderEmail(c, createOrder); err != nil {
 					c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 					return
 				}
@@ -119,7 +131,7 @@ func CreateOrder() gin.HandlerFunc {
 	}
 }
 
-func PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedOrderReservation) error {
+func (oc *OrderController) PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedOrderReservation) error {
 	customerName, existsName := c.Get("username")
 	customerEmail, existsEmail := c.Get("email")
 	if !existsName || !existsEmail {
@@ -139,8 +151,8 @@ func PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedO
 	numberOfPersons := createOrder.MakeReservation.NumberOfPersons
 	foods := createOrder.CreateOrder.FoodItems_IDs
 
-	totalPrice, _ := database.GetTotalPrice(foods)
-	totalFoods, _ := database.GetOrderFoodsDB(foods)
+	totalPrice, _ := oc.Repo.GetTotalPrice(foods)
+	totalFoods, _ := oc.Repo.GetOrderFoodsDB(foods)
 	err := pdf.GenerateAndSendReservationPDF("pdf/files/reservation.html", "pdf/files/invoice2.pdf", customerNameStr, customerEmailStr, resDate, resTime, numberOfPersons, totalPrice, totalFoods)
 	if err != nil {
 		fmt.Println("Error generating and sending PDF:", err)
@@ -150,11 +162,11 @@ func PrepareAndSendReservationEmail(c *gin.Context, createOrder models.CombinedO
 	return nil
 }
 
-func UpdateOrder() gin.HandlerFunc {
+func (oc *OrderController) UpdateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, _ := strconv.ParseInt(c.Param("order_id"), 10, 64)
 
-		data, err := database.UpdateOrderDB(c, id)
+		data, err := oc.Repo.UpdateOrderDB(c, id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Error in Getting Data From Database"})
 			return
@@ -169,7 +181,7 @@ func UpdateOrder() gin.HandlerFunc {
 	}
 }
 
-func PrepareAndSendOrderEmail(c *gin.Context, order models.CombinedOrderReservation) error {
+func (oc *OrderController) PrepareAndSendOrderEmail(c *gin.Context, order models.CombinedOrderReservation) error {
 	customerName, existsName := c.Get("username")
 	customerEmail, existsEmail := c.Get("email")
 	if !existsName || !existsEmail {
@@ -187,8 +199,8 @@ func PrepareAndSendOrderEmail(c *gin.Context, order models.CombinedOrderReservat
 	orderDate := time.Now().Format("2006-01-02")
 	orderTime := time.Now().Format("15:04:05")
 
-	totalPrice, _ := database.GetTotalPrice(order.CreateOrder.FoodItems_IDs)
-	totalFoods, _ := database.GetOrderFoodsDB(order.CreateOrder.FoodItems_IDs)
+	totalPrice, _ := oc.Repo.GetTotalPrice(order.CreateOrder.FoodItems_IDs)
+	totalFoods, _ := oc.Repo.GetOrderFoodsDB(order.CreateOrder.FoodItems_IDs)
 	err := pdf.GenerateAndSendOrderPDF("pdf/files/order.html", "pdf/files/invoice2.pdf", customerNameStr, customerEmailStr, orderDate, orderTime, 0, totalPrice, totalFoods)
 	if err != nil {
 		fmt.Println("Error generating and sending PDF:", err)

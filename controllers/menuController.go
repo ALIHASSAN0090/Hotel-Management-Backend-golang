@@ -1,17 +1,26 @@
 package controllers
 
 import (
-	"golang-hotel-management/database"
+	controller_repo "golang-hotel-management/controllers/controllers_repo"
+	"golang-hotel-management/database/database_repo"
 	"golang-hotel-management/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllMenusWithFoods() gin.HandlerFunc {
+type MenuController struct {
+	Repo database_repo.MenuRepository
+}
+
+func NewMenuController(repo database_repo.MenuRepository) controller_repo.MenuController {
+	return &MenuController{Repo: repo}
+}
+
+func (mc *MenuController) GetAllMenusWithFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		data, err := database.GetAllMenusWithFoodsDB(c)
+		data, err := mc.Repo.GetAllMenusWithFoodsDB(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 			return
@@ -26,7 +35,7 @@ func GetAllMenusWithFoods() gin.HandlerFunc {
 	}
 }
 
-func CreateMenu() gin.HandlerFunc {
+func (mc *MenuController) CreateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var NewMenu models.CreateMenu
@@ -35,7 +44,7 @@ func CreateMenu() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 		}
 
-		createdMenu, err := database.CreateMenuDB(c, NewMenu)
+		createdMenu, err := mc.Repo.CreateMenuDB(c, NewMenu)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"Error": "Failed to Create Menu Item"})
 			return
@@ -47,7 +56,7 @@ func CreateMenu() gin.HandlerFunc {
 		})
 	}
 }
-func UpdateMenu() gin.HandlerFunc {
+func (mc *MenuController) UpdateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var UpdateMenu models.UpdateMenu
 
@@ -55,7 +64,7 @@ func UpdateMenu() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 		}
 
-		data, err := database.UpdateMenuDB(c, UpdateMenu)
+		data, err := mc.Repo.UpdateMenuDB(c, UpdateMenu)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"Error": "Failed to Create Menu Item"})
 		}

@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"golang-hotel-management/database"
+	controller_repo "golang-hotel-management/controllers/controllers_repo"
+	"golang-hotel-management/database/database_repo"
 	"golang-hotel-management/models"
 	"net/http"
 	"strconv"
@@ -9,9 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllInvoices() gin.HandlerFunc {
+type InvoiceController struct {
+	Repo database_repo.InvoiceRepository
+}
+
+func NewInvoiceController(repo database_repo.InvoiceRepository) controller_repo.InvoiceController {
+	return &InvoiceController{Repo: repo}
+}
+
+func (ic *InvoiceController) GetAllInvoices() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		data, err := database.GetAllInvoicesDB(c)
+		data, err := ic.Repo.GetAllInvoicesDB(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -21,7 +30,7 @@ func GetAllInvoices() gin.HandlerFunc {
 	}
 }
 
-func GetInvoice() gin.HandlerFunc {
+func (ic *InvoiceController) GetInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		order_id, err := strconv.ParseInt(c.Param("order_id"), 10, 64)
 
@@ -30,7 +39,7 @@ func GetInvoice() gin.HandlerFunc {
 			return
 		}
 
-		data, err := database.GetInvoiceDB(order_id)
+		data, err := ic.Repo.GetInvoiceDB(order_id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -40,7 +49,7 @@ func GetInvoice() gin.HandlerFunc {
 	}
 }
 
-func UpdateInvoice() gin.HandlerFunc {
+func (ic *InvoiceController) UpdateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var invoice models.UpdateInvoice
@@ -50,7 +59,7 @@ func UpdateInvoice() gin.HandlerFunc {
 			return
 		}
 
-		data, err := database.UpdateInvoice(invoice)
+		data, err := ic.Repo.UpdateInvoice(invoice)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: err.Error()})
 			return
