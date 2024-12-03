@@ -13,7 +13,6 @@ func main() {
 
 	migration := NewMigration(userController, userRepository)
 
-	// Run migrations
 	if err := migration.RunMigrations(); err != nil {
 		log.Fatalf("Migrations Failed %v", err)
 	}

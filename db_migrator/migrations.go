@@ -57,19 +57,16 @@ func (m *Migration) RunMigrations() error {
 
 	log.Println("Migrations aplied successfully!")
 
-	if err := m.createDefaultAdminUser(); err != nil {
-		return fmt.Errorf("failed to create default admin user: %w", err)
-	}
+	// if err := m.createDefaultAdminUser(); err != nil {
+	// 	return fmt.Errorf("failed to create default admin user: %w", err)
+	// }
 
 	return nil
 }
 func (m *Migration) createDefaultAdminUser() error {
-	// if m.UserController == nil {
-	// 	return fmt.Errorf("UserController is not initialized")
-	// }
-	// if m.UserRepository == nil {
-	// 	return fmt.Errorf("UserRepository is not initialized")
-	// }
+	if m == nil {
+		log.Fatal("Migration struct is nil")
+	}
 
 	adminEmail := os.Getenv("ADMIN_DEFAULT_EMAIL")
 	adminPassword := os.Getenv("ADMIN_DEFAULT_PASSWORD")
