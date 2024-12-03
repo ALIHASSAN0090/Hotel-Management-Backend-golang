@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"golang-hotel-management/database"
+	controller_repo "golang-hotel-management/controllers/controllers_repo"
+	"golang-hotel-management/database/database_repo"
 	"golang-hotel-management/middleware"
 	"golang-hotel-management/models"
 	"log"
@@ -12,10 +13,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetUsers() gin.HandlerFunc {
+type UserController struct {
+	Repo database_repo.UserRepository
+}
+
+func NewUserController(repo database_repo.UserRepository) controller_repo.UserController {
+	return &UserController{Repo: repo}
+}
+
+func (uc *UserController) GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		data, err := database.GetUsersDB(c)
+		data, err := uc.Repo.GetUsersDB(c)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
@@ -29,14 +38,14 @@ func GetUsers() gin.HandlerFunc {
 	}
 }
 
-func GetUser() gin.HandlerFunc {
+func (uc *UserController) GetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, err := strconv.ParseInt(c.Param("user_id"), 10, 64)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
 		}
-		UserData, err := database.GetUserDB(c, userId)
+		UserData, err := uc.Repo.GetUserDB(c, userId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: err.Error()})
 			return
@@ -49,7 +58,7 @@ func GetUser() gin.HandlerFunc {
 	}
 }
 
-func Login() gin.HandlerFunc {
+func (uc *UserController) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var User models.Login
@@ -62,13 +71,13 @@ func Login() gin.HandlerFunc {
 
 		log.Printf("Received login data: %+v", User)
 
-		storedUser, err := database.GetUserByEmailDB(c, User.Email)
+		storedUser, err := uc.Repo.GetUserByEmailDB(c, User.Email)
 		if err != nil {
 			c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Email not found"})
 			return
 		}
 
-		if match, _ := VerifyPassword(storedUser.PasswordHash, User.PasswordHash); !match {
+		if match, _ := uc.VerifyPassword(storedUser.PasswordHash, User.PasswordHash); !match {
 			c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Invalid credentials"})
 			return
 		}
@@ -90,7 +99,7 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-func Signup() gin.HandlerFunc {
+func (uc *UserController) Signup() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var User models.User
@@ -104,14 +113,14 @@ func Signup() gin.HandlerFunc {
 		log.Printf("Received user data: %+v", User)
 
 		for {
-			getHash, err := HashPassword(User.PasswordHash)
+			getHash, err := uc.HashPassword(User.PasswordHash)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Password hashing failed"})
 				c.Error(err) // Log the error
 				return
 			}
 
-			if match, _ := VerifyPassword(getHash, User.PasswordHash); match {
+			if match, _ := uc.VerifyPassword(getHash, User.PasswordHash); match {
 				User.PasswordHash = getHash
 				break
 			}
@@ -119,7 +128,7 @@ func Signup() gin.HandlerFunc {
 
 		log.Printf("Hashed password: %s", User.PasswordHash)
 
-		createdUser, err := database.CreateUser(c, User)
+		createdUser, err := uc.Repo.CreateUser(c, User)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "User creation failed"})
 			c.Error(err) // Log the error
@@ -136,7 +145,7 @@ func Signup() gin.HandlerFunc {
 	}
 }
 
-func HashPassword(password string) (string, error) {
+func (uc *UserController) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
@@ -146,7 +155,7 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
+func (uc *UserController) VerifyPassword(userPassword string, providedPassword string) (bool, string) {
 	err := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(providedPassword))
 	if err != nil {
 		log.Printf("Password verification failed: %v", err)
@@ -156,7 +165,7 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	return true, "Password matched"
 }
 
-func CheckHeader() gin.HandlerFunc {
+func (uc *UserController) CheckHeader() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, _ := c.Get("userID")
 		email, _ := c.Get("email")

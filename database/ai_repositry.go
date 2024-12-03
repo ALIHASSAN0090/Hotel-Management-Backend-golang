@@ -9,7 +9,13 @@ import (
 	"os"
 )
 
-func GetAiResponceDB(order_details, hotel_details, question string) (string, error) {
+type AiRepository struct{}
+
+func NewAiRepository() *AiRepository {
+	return &AiRepository{}
+}
+
+func (ar *AiRepository) GetAiResponceDB(order_details, hotel_details, question string) (string, error) {
 	fmt.Println(question)
 	apiKey := os.Getenv("OPENAI_KEY")
 	if apiKey == "" {

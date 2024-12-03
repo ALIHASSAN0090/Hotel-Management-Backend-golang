@@ -13,7 +13,11 @@ import (
 
 var DbConn *sql.DB
 
-// Connect establishes a connection to the database and handles retries on failure.
+func InitializeRepo() (DbConn *sql.DB) {
+	DbConn, _ = Connect()
+	return
+}
+
 func Connect() (*sql.DB, error) {
 	var err error
 
@@ -54,5 +58,5 @@ func Connect() (*sql.DB, error) {
 		time.Sleep(5 * time.Second)
 	}
 
-	return nil, fmt.Errorf("failed to connect to the database after multiple attempts: %w", err)
+	return DbConn, fmt.Errorf("failed to connect to the database after multiple attempts: %w", err)
 }
