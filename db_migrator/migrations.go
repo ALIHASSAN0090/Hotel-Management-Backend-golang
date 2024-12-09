@@ -5,11 +5,8 @@ import (
 	controller_repo "golang-hotel-management/controllers/controllers_repo"
 	"golang-hotel-management/database"
 	"golang-hotel-management/database/database_repo"
-	"golang-hotel-management/models"
 	"log"
-	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -56,45 +53,6 @@ func (m *Migration) RunMigrations() error {
 	}
 
 	log.Println("Migrations aplied successfully!")
-
-	// if err := m.createDefaultAdminUser(); err != nil {
-	// 	return fmt.Errorf("failed to create default admin user: %w", err)
-	// }
-
-	return nil
-}
-func (m *Migration) createDefaultAdminUser() error {
-	if m == nil {
-		log.Fatal("Migration struct is nil")
-	}
-
-	adminEmail := os.Getenv("ADMIN_DEFAULT_EMAIL")
-	adminPassword := os.Getenv("ADMIN_DEFAULT_PASSWORD")
-
-	adminPasswordHash, err := m.UserController.HashPassword(adminPassword)
-	if err != nil {
-		return err
-	}
-
-	if adminEmail == "" || adminPasswordHash == "" {
-		return fmt.Errorf("environment variables ADMIN_EMAIL, ADMIN_PASSWORD, and ADMIN_ROLE must be set")
-	}
-
-	adminUser := models.User{
-		Username:     "admin",
-		Email:        adminEmail,
-		PasswordHash: adminPasswordHash,
-		FirstName:    "Admin",
-		LastName:     "User",
-		Role:         "admin",
-	}
-
-	c, _ := gin.CreateTestContext(nil)
-
-	_, err = m.UserRepository.CreateUser(c, adminUser)
-	if err != nil {
-		return fmt.Errorf("could not create admin user: %w", err)
-	}
 
 	return nil
 }

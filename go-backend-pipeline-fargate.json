@@ -1,0 +1,28 @@
+{
+    "family": "go-backend-pipeline",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "executionRoleArn": "${aws:parameter:/ecsTaskExecutionRole}",
+    "taskRoleArn": "${aws:parameter:/ecsTaskExecutionRole}",
+    "containerDefinitions": [
+      {
+        "name": "go-backend",
+        "image": "495599735832.dkr.ecr.eu-north-1.amazonaws.com/hotel-app:latest",
+        "memory": 512,
+        "cpu": 256,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 3000,
+            "hostPort": 3000,
+            "protocol": "tcp"
+          }
+        ]
+      }
+    ],
+    "cpu": "256",
+    "memory": "512"
+  }
+  
