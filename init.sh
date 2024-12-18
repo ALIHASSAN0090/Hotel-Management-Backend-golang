@@ -8,7 +8,8 @@ done
 
 echo "Running migrations..."
 
-# Run Go mod tidy
+
+
 if ! go mod tidy; then
     echo "Error running go mod tidy"
     exit 1
